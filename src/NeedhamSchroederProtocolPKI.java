@@ -23,11 +23,16 @@ public class NeedhamSchroederProtocolPKI {
 
         // Set IDs for Alice and Bob
         BigInteger aliceID = stringToAscii("Alice");
+        System.out.println("Alice's ID: " + aliceID);
         BigInteger bobID = stringToAscii("Bob");
+        System.out.println("Bob's ID: " + bobID);
 
         // Generate nonces for Alice and Bob
         int aliceNonce = (int) (Math.random() * 100000) + 1;
+        System.out.println("Alice's nonce: " + aliceNonce);
         int bobNonce = (int) (Math.random() * 100000) + 1;
+        System.out.println("Bob's nonce: " + bobNonce);
+        System.out.println();
         
         // Step 1: Alice -> TTP: E(KeA, IDA, IDB)
         System.out.println("******** Step 1: Alice -> TTP: E(KeA, IDA, IDB) ********");
