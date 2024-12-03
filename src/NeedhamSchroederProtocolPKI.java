@@ -2,7 +2,7 @@ import java.math.BigInteger;
 import java.security.SecureRandom;
 
 public class NeedhamSchroederProtocolPKI {
-    public static void main(String[] args) throws Exception{
+    public static void main(String[] args){
         // Generate public and private keys for Alice, Bob, and TTP
         // Public key: int[1], int[0], private key: int[2], int[0]
         BigInteger[] aliceKeys = RSAKeyGeneration();
@@ -50,9 +50,17 @@ public class NeedhamSchroederProtocolPKI {
         System.out.println("Alice's Message to Bob: " + aliceToBobMessage);
         BigInteger aliceToBobEncryption = RSAEncyption(aliceToBobMessage, bobKeys[1], bobKeys[0]);
         System.out.println("Alice's Encryption to Bob: " + aliceToBobEncryption);
-        BigInteger aliceToBobDecryption = RSADecryption(aliceToBobEncryption, bobKeys[2], bobKeys[0]);
+        // Generate hash, H(m), for Alice digital signature
+        BigInteger aliceToBobHash = generateHash(aliceToBobMessage);
+        System.out.println("Alice's hash of her message: " + aliceToBobHash);
+        BigInteger aliceToBobSignature = RSAEncyption(aliceToBobHash, aliceKeys[2], aliceKeys[0]); // Using Alice's private key
+        // Perform decryption of Alice's message and signature
+        BigInteger aliceToBobDecryption = RSADecryption(aliceToBobEncryption, bobKeys[2], bobKeys[0]); // Using Bob's private key
+        BigInteger aliceToBobSigDecryp = RSADecryption(aliceToBobSignature, aliceKeys[1], aliceKeys[0]); // Using Alice's public key
         System.out.println("Bob's Decryption of Alice's Message: " + aliceToBobDecryption);
+        System.out.println("Bob's decrypted hash of Alice's signature: " + aliceToBobSigDecryp);
         System.out.println("Does Alice's original message match Bob's decrypted message: " + ((aliceToBobMessage.compareTo(aliceToBobDecryption) == 0) ? "TRUE" : "FLASE"));
+        System.out.println("Does Bob's decrypted hash match Alice's signature: " + ((aliceToBobHash.compareTo(aliceToBobSigDecryp) == 0) ? "TRUE" : "FALSE"));
         System.out.println();
 
         // Step 4: Bob -> TTP: E(KeB, IDB || IDA)
@@ -75,9 +83,16 @@ public class NeedhamSchroederProtocolPKI {
         System.out.println("Bob's Message to Alice: " + bobToAliceMessage);
         BigInteger bobToAliceEncryption = RSAEncyption(bobToAliceMessage, aliceKeys[1], aliceKeys[0]);
         System.out.println("Bob's Encryption to Alice: " + bobToAliceEncryption);
+        // Generate Bob's hash H(m)
+        BigInteger bobToAliceHash = generateHash(bobToAliceMessage);
+        BigInteger bobToAliceSignature = RSAEncyption(bobToAliceHash, bobKeys[2], bobKeys[0]); // Using Bob's private key
+        System.out.println("Bob's hash of his message: " + bobToAliceHash);
         BigInteger bobToAliceDecryption = RSADecryption(bobToAliceEncryption, aliceKeys[2], aliceKeys[0]);
+        BigInteger bobToAliceSigDecrypt = RSADecryption(bobToAliceSignature, bobKeys[1], bobKeys[0]);
         System.out.println("Alice's Decryption of Bob's Message: " + bobToAliceDecryption);
+        System.out.println("Alice's decrypted hash of Bob's signature: " + bobToAliceSigDecrypt);
         System.out.println("Does Bob's original message match Alice's decrypted message: " + ((bobToAliceMessage.compareTo(bobToAliceDecryption) == 0) ? "TRUE" : "FALSE"));
+        System.out.println("Does Alice's decrypted hash match Bob's signature: " + ((bobToAliceHash.compareTo(bobToAliceSigDecrypt) == 0) ? "TRUE" : "FALSE"));
         System.out.println();
 
         // Step 7: Alice -> Bob: E(KeB, NB)
@@ -86,9 +101,16 @@ public class NeedhamSchroederProtocolPKI {
         System.out.println("Alice's Message to Bob: " + aliceToBobMessage2);
         BigInteger aliceToBobEncryption2 = RSAEncyption(aliceToBobMessage2, bobKeys[1], bobKeys[0]);
         System.out.println("Alice's Encryption to Bob: " + aliceToBobEncryption2);
+        // Generate hash, H(m), of Alice's message
+        BigInteger aliceToBobHash2 = generateHash(aliceToBobMessage2);
+        BigInteger aliceToBobSignature2 = RSADecryption(aliceToBobHash2, aliceKeys[2], aliceKeys[0]);
+        System.out.println("Alice's hash of her message: " + aliceToBobHash2);
         BigInteger aliceToBobDecryption2 = RSADecryption(aliceToBobEncryption2, bobKeys[2], bobKeys[0]);
+        BigInteger aliceToBobSigDecrypt2 = RSADecryption(aliceToBobSignature2, aliceKeys[1], aliceKeys[0]);
         System.out.println("Bob's Decryption of Alice's Message: " + aliceToBobDecryption2);
-        System.out.println("Does Alice's original message match Bob's decrypted message: " + ((aliceToBobMessage2.compareTo(aliceToBobDecryption2) == 0) ? "TRUE" : "FALSE"));
+        System.out.println("Bob's decrypted hash of Alice's signature: " + aliceToBobSigDecrypt2);
+        System.out.println("Does Bob retrieve its own nonce from Alice's encrypted message: " + ((aliceToBobMessage2.compareTo(aliceToBobDecryption2) == 0) ? "TRUE" : "FALSE"));
+        System.out.println("Does Bob's decrypted hash match Alice's signature: " + ((aliceToBobHash2.compareTo(aliceToBobSigDecrypt2) == 0) ? "TRUE" : "FALSE"));
         System.out.println();
     }
 
@@ -125,7 +147,7 @@ public class NeedhamSchroederProtocolPKI {
         BigInteger q = new BigInteger("-1");
         // generate large q and p and check if they are prime
         do {
-            // Generate two random BigIntegers of up to 512 bits
+            // Generate two random BigIntegers of up to 50 bits
             p = new BigInteger(50, rand);
             q = new BigInteger(50, rand);
             if (!p.isProbablePrime(100)) {
@@ -147,19 +169,6 @@ public class NeedhamSchroederProtocolPKI {
         return keys;
     }
 
-    // private static String stringToAsciiPadded(String message){
-    //     String asciiMessage = "";
-    //     for (char c : message.toCharArray()){
-    //         String asciiCharacter = String.valueOf((int) c);
-    //         while (asciiCharacter.length() < 8){
-    //             asciiCharacter = "0" + asciiCharacter;
-    //         }
-    //         asciiMessage += asciiCharacter;
-    //         System.out.println(asciiMessage);
-    //     }
-    //     return asciiMessage;
-    // }
-
     private static BigInteger stringToAscii(String message){
         String asciiMessage = "";
         for (char c : message.toCharArray()){
@@ -170,25 +179,17 @@ public class NeedhamSchroederProtocolPKI {
         return numAsciiMessage;
     }
 
-    // private static String asciiToString(String ascii){
-    //     String decryptedMessage = "";
-    //     int messageLength = ascii.length() / 8;
-    //     for (int i = 0; i < messageLength; i++){
-    //         // Extract the 8-bit ASCII values (in string form)
-    //         String asciiString = ascii.substring(8 * i, 8 * (i + 1));
-    //         // System.out.println(asciiString);
-    //         int asciiValue = Integer.parseInt(asciiString); // Convert to integer
-    //         decryptedMessage += (char) asciiValue; // Convert to char and concatenate
-    //     }
-    //     return decryptedMessage;
-    // }
-
     private static BigInteger RSAEncyption(BigInteger m, BigInteger e, BigInteger n){ // m < n
         return m.modPow(e, n);
     }
 
     private static BigInteger RSADecryption(BigInteger c, BigInteger d, BigInteger n){
         return c.modPow(d, n);
+    }
+
+    private static BigInteger generateHash(BigInteger message){
+        String stringMessage = message.toString(10);
+        return new BigInteger(String.valueOf(stringMessage.hashCode()));
     }
     
 }
