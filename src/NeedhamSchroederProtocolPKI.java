@@ -39,22 +39,22 @@ public class NeedhamSchroederProtocolPKI {
         System.out.println();
 
         // Concatonate Alice and Bob's IDs: IDA || IDB
-        String encodedIdaIdb = concatonateString(aliceID, bobID);
+        String encodedIdaIdb = concatenateString(aliceID, bobID);
 
         // Concatonate Bob's ID and Bob's public key: IDB || KeB
-        String encodedIdbKeb = concatonateString(bobID, bobKeys[1].toString(2));
+        String encodedIdbKeb = concatenateString(bobID, bobKeys[1].toString(2));
     
         // Concatonate Alice's nonce with Alices ID: NA || IDA
-        String encodedNaIda = concatonateString(aliceNonce, aliceID);
+        String encodedNaIda = concatenateString(aliceNonce, aliceID);
        
         // Concatonate Bob's ID with Alice's ID: IDB || IDA
-        String encodedIdbIda = concatonateString(bobID, aliceID);
+        String encodedIdbIda = concatenateString(bobID, aliceID);
 
         // Concatonate Alice's ID with Alice's public key: IDA || KeA
-        String encodedIdaKea = concatonateString(aliceID, aliceKeys[1].toString(2));
+        String encodedIdaKea = concatenateString(aliceID, aliceKeys[1].toString(2));
         
         // Concatonate Alice's nonce with Bob's nonce: NA || NB
-        String encodedNaNb = concatonateString(aliceNonce, bobNonce);
+        String encodedNaNb = concatenateString(aliceNonce, bobNonce);
         
 
 // **************** BEGIN PROTOCOL ******************
@@ -115,7 +115,7 @@ public class NeedhamSchroederProtocolPKI {
         System.out.println("******** Step 4 (Modification): Bob -> Alice: E(KeB, IDA || J) ********");
         // Generate nonce, J
         String J = Integer.toBinaryString((int) (Math.random() * 100000) + 1);
-        String encodedIdaJ = concatonateString(aliceID, J);
+        String encodedIdaJ = concatenateString(aliceID, J);
         BigInteger nonceJMessage = new BigInteger(encodedIdaJ, 2);
         System.out.println("Bob sends Alice his ID concatonated with his nonce J: " + nonceJMessage);
         BigInteger bobToAliceNonceJEncryption = RSAEncyption(nonceJMessage, bobKeys[1], bobKeys[0]);
@@ -129,7 +129,7 @@ public class NeedhamSchroederProtocolPKI {
 
         // Step 6 (Modification): TTP -> Alice: E(KdS, KAB || IDA || J)
         System.out.println("******** Step 6 (Modification): TTP -> Alice: E(KdS, KAB || IDA || J) ********");
-        String sessionKeyNonceJ = concatonateString(sessionKey, encodedIdaJ);
+        String sessionKeyNonceJ = concatenateString(sessionKey, encodedIdaJ);
         BigInteger ttpToAliceSessionKeyJ = new BigInteger(sessionKeyNonceJ, 2);
         System.out.println("TTP sends Alice the session key and nonce J: " + ttpToAliceSessionKeyJ);
         BigInteger ttpToAliceSessionKeyJEncryption = RSAEncyption(ttpToAliceSessionKeyJ, ttpKeys[2], ttpKeys[0]);
@@ -178,8 +178,8 @@ public class NeedhamSchroederProtocolPKI {
 
         // Step 10: Alice -> Bob: E(KeB, NB)
         System.out.println("******** Step 10: Alice -> Bob: E(KeB, KAB || J || NB) ********");
-        String sessionKeyJ = concatonateString(sessionKey, J);
-        String sessionKeyJNB = concatonateString(sessionKeyJ, bobNonce);
+        String sessionKeyJ = concatenateString(sessionKey, J);
+        String sessionKeyJNB = concatenateString(sessionKeyJ, bobNonce);
         BigInteger aliceToBobMessage2 = new BigInteger(sessionKeyJNB, 2);
         System.out.println("Alice's Message to Bob: " + aliceToBobMessage2);
         BigInteger aliceToBobEncryption2 = RSAEncyption(aliceToBobMessage2, bobKeys[1], bobKeys[0]);
@@ -287,7 +287,7 @@ public class NeedhamSchroederProtocolPKI {
         return binary;
     }
     
-    private static String concatonateString(String message1, String message2){
+    private static String concatenateString(String message1, String message2){
         List<String> list = new ArrayList<>();
         list.add(message1); list.add(message2);
         MessagePreprocessing messagePreprocessing = new MessagePreprocessing();
