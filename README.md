@@ -22,5 +22,5 @@ If code is to be run using the terminal, navigate to the directory containing th
 
 ## Links
 
-- [Project Report](https://docs.google.com/document/d/1wly2oX0mqHjnCtKDUvglim4fgq3BSfS1fD6-EziK4So/edit?usp=sharing)
+- [Project Report](https://drive.google.com/file/d/1cRzk9K57LzGVnboxJdAchmEMZYk-TJA3/view?usp=sharing)
 - [GitHub Repository](https://github.com/Nik-Filippov/network-security-final-project)
